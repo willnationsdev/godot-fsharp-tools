@@ -23,6 +23,8 @@ func init(p_plugin: EditorPlugin) -> void:
 	initialized = true
 	
 	plugin = p_plugin
+	theme = plugin.get_editor_theme()
+	
 	# warning-ignore:return_value_discarded
 	path_button.connect("pressed", file_dialog, "popup_centered_ratio", [0.75])
 	# warning-ignore:return_value_discarded

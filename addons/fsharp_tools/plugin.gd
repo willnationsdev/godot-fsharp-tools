@@ -14,7 +14,8 @@ const SETTINGS_FSHARP_TOOLTIP := "Toggle automatic F# script creation."
 
 ##### PROPERTIES #####
 
-var setup_dialog_scn := preload("res://addons/fsharp_tools/FSharpSetupDialog.tscn")
+var setup_dialog_scn := preload("res://addons/fsharp_tools/fsharp_setup_dialog.tscn")
+
 var setup_dialog: ConfirmationDialog = null
 var find_csharp: FileDialog = null
 
@@ -34,11 +35,6 @@ func _exit_tree() -> void:
 
 ##### CONNECTIONS #####
 
-func _setup_setup_dialog() -> void:
-	setup_dialog = setup_dialog_scn.instance()
-	setup_dialog.call_deferred("init", self)
-	add_child(setup_dialog)
-
 func _show_setup_dialog(_p_ud) -> void:
 	_setup_setup_dialog()
 	setup_dialog.popup_centered_minsize()
@@ -51,6 +47,12 @@ func create_fsharp_script() -> void:
 
 ##### PRIVATE METHODS #####
 
+func _setup_setup_dialog() -> void:
+	setup_dialog = setup_dialog_scn.instance()
+	setup_dialog.call_deferred("init", self)
+	setup_dialog.theme = get_editor_theme()
+	add_child(setup_dialog)
+
 func _setup_find_csharp() -> void:
 	find_csharp = FileDialog.new()
 	find_csharp.access = FileDialog.ACCESS_RESOURCES
@@ -58,6 +60,10 @@ func _setup_find_csharp() -> void:
 	find_csharp.mode = FileDialog.MODE_OPEN_FILE
 	find_csharp.filters = PoolStringArray(["*.cs ; C# Scripts"])
 	find_csharp.window_title = "Select a C# script for which to generate F#"
+	find_csharp.theme = get_editor_theme()
+	# warning-ignore:return_value_discarded
+	find_csharp.connect("confirmed", self, "create_fsharp_script")
+	add_child(find_csharp)
 
 func _setup_fsharp_settings() -> void:
 	if ProjectSettings.get_setting(SETTINGS_FSHARP_NAME) == null:
@@ -67,3 +73,8 @@ func _setup_fsharp_settings() -> void:
 			"type": TYPE_BOOL
 		})
 		ProjectSettings.set_setting(SETTINGS_FSHARP_NAME, false)
+
+##### PUBLIC METHODS #####
+
+func get_editor_theme():
+	return get_editor_interface().get_base_control().theme
