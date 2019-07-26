@@ -36,7 +36,7 @@ func init(p_plugin: EditorPlugin) -> void:
 	# warning-ignore:return_value_discarded
 	connect("confirmed", plugin, "setup_fsharp_project")
 
-func _reset_final_path(p_text) -> void:
+func _reset_final_path(_p_text) -> void:
 	final_path.text = path_edit.text.plus_file((name_edit.text + "/" if create_dir_check.pressed else "") + name_edit.text + ".fsproj")
 
 func get_final_path() -> String:

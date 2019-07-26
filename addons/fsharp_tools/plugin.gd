@@ -40,6 +40,22 @@ func _show_setup_dialog(_p_ud) -> void:
 	setup_dialog.popup_centered_minsize()
 
 func setup_fsharp_project() -> void:
+	var final_path := ProjectSettings.globalize_path(setup_dialog.get_final_path())
+	
+	var dir = Directory.new()
+	var base_dir = final_path.get_base_dir()
+	if not dir.dir_exists(base_dir):
+		dir.make_dir_recursive(base_dir)
+	
+	OS.execute("dotnet", PoolStringArray(["new", "-o", base_dir, "-lang", "\"F#\""]), true)
+	
+	if not dir.dir_exists(final_path):
+		push_error("fsharp_tools/plugin.gd::setup_fsharp_project(): Failed to create F# library project.")
+		return
+	
+	print(final_path)
+	var csharp_sln_path = ProjectSettings.globalize_path("res://" + ProjectSettings.get_setting("application/config/name") + ".sln")
+	print(csharp_sln_path)
 	print("setup_fsharp_project")
 
 func create_fsharp_script() -> void:
