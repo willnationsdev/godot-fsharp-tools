@@ -94,15 +94,22 @@ margin_bottom = 138.0
 window_title = "Open a Directory"
 resizable = true
 mode = 2
-access = 2
 show_hidden_files = true
-current_dir = "D:/Source/Projects/Godot/CSharpTest"
-current_path = "D:/Source/Projects/Godot/CSharpTest/"
 
 [node name="FinalPathLabel" type="Label" parent="VBoxContainer"]
-margin_top = 100.0
+margin_top = 87.0
 margin_right = 332.0
-margin_bottom = 114.0
+margin_bottom = 101.0
 size_flags_horizontal = 3
 size_flags_vertical = 6
+valign = 1
+
+[node name="Disclaimer" type="Label" parent="VBoxContainer"]
+margin_top = 112.0
+margin_right = 332.0
+margin_bottom = 126.0
+size_flags_horizontal = 3
+size_flags_vertical = 6
+text = "(This will take a while)"
+align = 1
 valign = 1
