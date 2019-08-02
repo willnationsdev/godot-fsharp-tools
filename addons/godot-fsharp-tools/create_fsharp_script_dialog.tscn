@@ -1,0 +1,139 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://addons/godot-fsharp-tools/create_fsharp_script_dialog.gd" type="Script" id=1]
+[ext_resource path="res://addons/godot-fsharp-tools/icons/icon_folder.svg" type="Texture" id=2]
+
+[node name="ConfirmationDialog" type="ConfirmationDialog"]
+visible = true
+margin_top = 1.0
+margin_right = 348.0
+margin_bottom = 175.0
+rect_min_size = Vector2( 500, 200 )
+window_title = "Create an F# Script from C#"
+script = ExtResource( 1 )
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 8.0
+margin_top = 8.0
+margin_right = -8.0
+margin_bottom = -36.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="GridContainer" type="GridContainer" parent="VBoxContainer"]
+margin_right = 484.0
+margin_bottom = 108.0
+columns = 3
+
+[node name="CSPathLabel" type="Label" parent="VBoxContainer/GridContainer"]
+margin_top = 5.0
+margin_right = 101.0
+margin_bottom = 19.0
+text = "C# Script Path:"
+
+[node name="CSPathEdit" type="LineEdit" parent="VBoxContainer/GridContainer"]
+margin_left = 105.0
+margin_right = 452.0
+margin_bottom = 24.0
+size_flags_horizontal = 3
+placeholder_text = "res://MyClass.cs -> MyClassFs"
+
+[node name="CSPathButton" type="ToolButton" parent="VBoxContainer/GridContainer"]
+margin_left = 456.0
+margin_right = 484.0
+margin_bottom = 24.0
+icon = ExtResource( 2 )
+
+[node name="FSProjPathLabel" type="Label" parent="VBoxContainer/GridContainer"]
+margin_top = 33.0
+margin_right = 101.0
+margin_bottom = 47.0
+text = "F# Project Path:"
+
+[node name="FSProjPathEdit" type="LineEdit" parent="VBoxContainer/GridContainer"]
+margin_left = 105.0
+margin_top = 28.0
+margin_right = 452.0
+margin_bottom = 52.0
+size_flags_horizontal = 3
+text = "res://"
+placeholder_text = "\"MyLib\" -> res;//MyLib.fsproj"
+
+[node name="FSProjPathButton" type="ToolButton" parent="VBoxContainer/GridContainer"]
+margin_left = 456.0
+margin_top = 28.0
+margin_right = 484.0
+margin_bottom = 52.0
+icon = ExtResource( 2 )
+
+[node name="NameLabel" type="Label" parent="VBoxContainer/GridContainer"]
+margin_top = 61.0
+margin_right = 101.0
+margin_bottom = 75.0
+text = "F# Class Name:"
+
+[node name="NameEdit" type="LineEdit" parent="VBoxContainer/GridContainer"]
+margin_left = 105.0
+margin_top = 56.0
+margin_right = 452.0
+margin_bottom = 80.0
+size_flags_horizontal = 3
+placeholder_text = "Defaults to <C# Name> + \"Fs\""
+
+[node name="Control" type="Control" parent="VBoxContainer/GridContainer"]
+margin_left = 456.0
+margin_top = 56.0
+margin_right = 484.0
+margin_bottom = 80.0
+
+[node name="NamespaceLabel" type="Label" parent="VBoxContainer/GridContainer"]
+margin_top = 89.0
+margin_right = 101.0
+margin_bottom = 103.0
+text = "Namespace:"
+
+[node name="NamespaceEdit" type="LineEdit" parent="VBoxContainer/GridContainer"]
+margin_left = 105.0
+margin_top = 84.0
+margin_right = 452.0
+margin_bottom = 108.0
+size_flags_horizontal = 3
+placeholder_text = "MyNamespace; Defaults to <F# Project Name>"
+
+[node name="Control2" type="Control" parent="VBoxContainer/GridContainer"]
+margin_left = 456.0
+margin_top = 84.0
+margin_right = 484.0
+margin_bottom = 108.0
+
+[node name="FileDialogCS" type="FileDialog" parent="VBoxContainer"]
+margin_left = 8.0
+margin_top = 8.0
+margin_right = 340.0
+margin_bottom = 138.0
+window_title = "Open a File"
+resizable = true
+mode = 0
+filters = PoolStringArray( "*.cs ; C# Script" )
+show_hidden_files = true
+
+[node name="FileDialogLib" type="FileDialog" parent="VBoxContainer"]
+margin_left = 8.0
+margin_top = 8.0
+margin_right = 340.0
+margin_bottom = 138.0
+window_title = "Open a File"
+resizable = true
+mode = 0
+filters = PoolStringArray( "*.fsproj ; F# Project" )
+show_hidden_files = true
+
+[node name="FinalPathLabel" type="Label" parent="VBoxContainer"]
+margin_top = 127.0
+margin_right = 484.0
+margin_bottom = 141.0
+size_flags_horizontal = 3
+size_flags_vertical = 6
+valign = 1
