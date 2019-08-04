@@ -7,10 +7,11 @@ extends EditorPlugin
 
 ##### CONSTANTS #####
 
-const MENU_FSHARP_SETUP := "Setup F# Project"
-const MENU_FSHARP_GENERATE_SCRIPT := "Generate F# script from C# script."
-const SETTINGS_FSHARP_AUTOGEN_NAME := "mono/fsharp_tools/auto_generate_f#_scripts"
-const SETTINGS_FSHARP_AUTOGEN_TOOLTIP := "Toggle automatic F# script creation."
+const MENU_FSHARP_SETUP := "Setup F# project..."
+const MENU_FSHARP_GENERATE_SCRIPT := "Generate F# script from C# script..."
+const SETTINGS_FSHARP_AUTOGEN := "mono/f#_tools/auto_generate_f#_scripts"
+const SETTINGS_FSHARP_DEFAULT_OUTPUT_DIR := "mono/f#_tools/default_output_dir"
+const SETTINGS_FSHARP_DEFAULT_NAMESPACE := "mono/f#_tools/default_namespace"
 # The version of Mono C# that Godot Engine supports
 
 const REPO_NAME = "godot-fsharp-tools"
@@ -72,7 +73,6 @@ public class %s : %s
 """
 )
 
-
 var setup_dialog_scn := preload("res://addons/godot-fsharp-tools/fsharp_setup_dialog.tscn")
 var create_fsharp_script_scn := preload("res://addons/godot-fsharp-tools/create_fsharp_script_dialog.tscn")
 
@@ -88,6 +88,7 @@ func _enter_tree() -> void:
 	add_tool_menu_item(MENU_FSHARP_GENERATE_SCRIPT, create_fsharp_script_dialog, "popup_centered_minsize", Vector2.ZERO)
 	
 	var fs := get_editor_interface().get_resource_filesystem()
+	# warning-ignore:return_value_discarded
 	fs.connect("filesystem_changed", self, "_on_filesystem_changed")
 
 func _exit_tree() -> void:
@@ -102,17 +103,23 @@ func _show_setup_dialog(_p_ud) -> void:
 	setup_dialog.name_edit.grab_focus()
 
 func _on_filesystem_changed() -> void:
-	if not ProjectSettings.get_setting(SETTINGS_FSHARP_AUTOGEN_NAME):
-		return
+	if true and "Prerequisites Check":
+		var dir := Directory.new()
+		if not (ProjectSettings.has_setting(SETTINGS_FSHARP_AUTOGEN) and
+			ProjectSettings.has_setting(SETTINGS_FSHARP_DEFAULT_OUTPUT_DIR) and
+			ProjectSettings.has_setting(SETTINGS_FSHARP_DEFAULT_NAMESPACE) and
+			dir.dir_exists(ProjectSettings.get_setting(SETTINGS_FSHARP_DEFAULT_OUTPUT_DIR))
+			):
+			
+			return
 	
 	var top_dir := "res://"
 	var dirs: Array = [top_dir]
-	var dir: Directory = Directory.new()
-	var first: bool = true
-	var fsdata := {}
+	var dir := Directory.new()
+	var first := true
 	var csdata := {}
 
-	# generate 'data' map
+	# generate 'csdata' map
 	while not dirs.empty():
 		var dir_name = dirs.back()
 		dirs.pop_back()
@@ -147,21 +154,20 @@ func _on_filesystem_changed() -> void:
 	dir = Directory.new()
 	first = true
 
-	# generate 'data' map
+	# Remove from 'csdata' entries that already have matching F# scripts
 	while not dirs.empty():
-		var dir_name = dirs.back()
+		var dir_name = dirs.back() as String
 		dirs.pop_back()
 
 		if dir.open(dir_name) == OK:
 			#warning-ignore:return_value_discarded
 			dir.list_dir_begin()
-			var file_name = dir.get_next()
+			var file_name := dir.get_next()
 			while file_name:
 				if first and not dir_name == top_dir:
 					first = false
 				# Ignore hidden content
 				if not file_name.begins_with("."):
-					var a_path = dir.get_current_dir() + ("" if first else "/") + file_name
 					
 					# If a directory, then add to list of directories to visit
 					if dir.current_is_dir():
@@ -169,8 +175,10 @@ func _on_filesystem_changed() -> void:
 					# If a file, check if an F# script
 					elif file_name.ends_with(".fs"):
 						# If so, remove the F# script's C# class name equivalent from the list of C# scripts.
-						var a_csname = file_name.get_basename().replace("Fs", "")
+						var a_csname := file_name.get_basename()
+						a_csname = a_csname.substr(0, len(a_csname) - 2) # remove "Fs"
 						if csdata.has(a_csname):
+							# warning-ignore:return_value_discarded
 							csdata.erase(a_csname)
 
 				# Move on to the next file in this directory
@@ -180,14 +188,37 @@ func _on_filesystem_changed() -> void:
 			dir.list_dir_end()
 	
 	# scripts that need to be generated
-	var f = File.new()
+	var f := File.new()
+	var find_typenames := RegEx.new()
+	# warning-ignore:return_value_discarded
+	find_typenames.compile("public class (?P<classname>.+) : (?P<basename>.+)")
 	for a_csname in csdata:
 		var path = csdata[a_csname]
 		var fsname = path.get_file().get_basename() + "Fs"
-		var fspath = "" # must configure an assigned F# project and put them there
-		if f.open(path, File.WRITE) == OK:
-			f.store_string(default_fsharp_file_text % [])
+		var fspath = ProjectSettings.get_setting(SETTINGS_FSHARP_DEFAULT_OUTPUT_DIR)
+		if not fspath:
+			return
+		fspath = fspath.plus_file(fsname + ".fs")
+		if dir.file_exists(fspath):
+			return
+		var csharp_classname := ""
+		var basename := ""
+		if f.open(fspath, File.WRITE) == OK:
+			var csf := File.new()
+			if csf.open(path, File.READ) == OK:
+				var match_ = find_typenames.search(csf.get_as_text())
+				if match_:
+					csharp_classname = match_.strings[match_.names.classname] as String
+					basename = match_.strings[match_.names.basename] as String
+				csf.close()
+			
+			var namespace = ProjectSettings.get_setting(SETTINGS_FSHARP_DEFAULT_NAMESPACE)
+			f.store_string(default_fsharp_file_text % [namespace, fsname, basename])
 			f.close()
+		
+			if csf.open(path, File.WRITE) == OK:
+				csf.store_string(default_csharp_file_text % [namespace, csharp_classname, fsname])
+				csf.close()
 
 ##### PRIVATE METHODS #####
 
@@ -204,13 +235,31 @@ func _setup_create_fsharp_script_dialog() -> void:
 	add_child(create_fsharp_script_dialog)
 
 func _setup_fsharp_settings() -> void:
-	if ProjectSettings.get_setting(SETTINGS_FSHARP_AUTOGEN_NAME) == null:
+	if not ProjectSettings.has_setting(SETTINGS_FSHARP_AUTOGEN):
 		ProjectSettings.add_property_info({
-			"name": SETTINGS_FSHARP_AUTOGEN_NAME,
-			"hint_tooltip": "If true, when a user creates a C# script, Godot creates a corresponding F# script and makes the C# script derive it.",
+			"name": SETTINGS_FSHARP_AUTOGEN,
+			"tooltip": "If true, when a user creates a C# script, Godot creates a corresponding F# script and makes the C# script derive it.",
 			"type": TYPE_BOOL
 		})
-		ProjectSettings.set_setting(SETTINGS_FSHARP_AUTOGEN_NAME, false)
+		ProjectSettings.set_setting(SETTINGS_FSHARP_AUTOGEN, false)
+		
+	if not ProjectSettings.has_setting(SETTINGS_FSHARP_DEFAULT_OUTPUT_DIR):
+		ProjectSettings.add_property_info({
+			"name": SETTINGS_FSHARP_DEFAULT_OUTPUT_DIR,
+			"tooltip": "The directory in which the plugin should auto-generate F# scripts.",
+			"type": TYPE_STRING,
+			"hint": PROPERTY_HINT_DIR
+		})
+		ProjectSettings.set_setting(SETTINGS_FSHARP_DEFAULT_OUTPUT_DIR, "")
+	
+	if not ProjectSettings.has_setting(SETTINGS_FSHARP_DEFAULT_NAMESPACE):
+		ProjectSettings.add_property_info({
+			"name": SETTINGS_FSHARP_DEFAULT_NAMESPACE,
+			"tooltip": "The namespace in which the plugin should auto-generate F# scripts..",
+			"type": TYPE_STRING,
+			"hint": PROPERTY_HINT_DIR
+		})
+		ProjectSettings.set_setting(SETTINGS_FSHARP_DEFAULT_NAMESPACE, "")
 
 func _print_and_clear_output(var p_output: Array) -> void:
 	for line in p_output:
@@ -222,8 +271,8 @@ func _print_and_clear_output(var p_output: Array) -> void:
 func get_editor_theme() -> Theme:
 	return get_editor_interface().get_base_control().theme
 
-func setup_fsharp_project() -> void:
-	var res_final_path := setup_dialog.get_final_path() as String
+func setup_fsharp_project(p_fspath: String) -> void:
+	var res_final_path := p_fspath
 	var final_path := ProjectSettings.globalize_path(res_final_path)
 	var output := []
 	
@@ -272,6 +321,7 @@ func setup_fsharp_project() -> void:
 	
 	# Add the System.Runtime dependency to the F# library.
 	print("Running `dotnet add %s package System.Runtime`" % final_path)
+# warning-ignore:return_value_discarded
 	OS.execute("dotnet", PoolStringArray(["add", final_path, "package", "System.Runtime"]), true, output)
 	_print_and_clear_output(output)
 	
@@ -284,16 +334,15 @@ func setup_fsharp_project() -> void:
 func create_fsharp_script_from_csharp(p_fspath: String, p_cspath: String, p_fsclass: String, p_namespace: String) -> void:
 	var classname = p_fspath.get_file().get_basename() if not p_fsclass else p_fsclass
 	
-	var csharp_classname := ""
 	var basename := ""
 	if true and "Extract C# class name and base type from C# script.":
 		var regex := RegEx.new()
+		# warning-ignore:return_value_discarded
 		regex.compile("public class (?P<classname>.+) : (?P<basename>.+)")
 		var f := File.new()
 		if f.open(p_cspath, File.READ) == OK:
 			var match_ = regex.search(f.get_as_text())
 			if match_:
-				csharp_classname = match_.strings[match_.names.classname] as String
 				basename = match_.strings[match_.names.basename] as String
 			f.close()
 	
@@ -310,16 +359,18 @@ func create_fsharp_script_from_csharp(p_fspath: String, p_cspath: String, p_fscl
 			f.close()
 	
 	if true and "Update inheritance of C# script.":
-		var regex := RegEx.new()
-		regex.compile(" : .+\\b")
+		var replace_inheritance := RegEx.new()
+		# warning-ignore:return_value_discarded
+		replace_inheritance.compile(" : .+\\b")
 		
-		var regex2 := RegEx.new()
-		regex2.compile("using System;")
+		var include_namespace := RegEx.new()
+		# warning-ignore:return_value_discarded
+		include_namespace.compile("using System;")
 		var f := File.new()
 		if f.open(p_cspath, File.READ_WRITE) == OK:
 			var text = f.get_as_text()
-			text = regex.sub(text, " : %s" % classname)
-			text = regex2.sub(text, (
+			text = replace_inheritance.sub(text, " : %s" % classname)
+			text = include_namespace.sub(text, (
 """using System;
 
 using %s;"""

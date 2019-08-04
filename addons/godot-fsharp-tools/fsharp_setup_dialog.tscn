@@ -3,9 +3,7 @@
 [ext_resource path="res://addons/godot-fsharp-tools/fsharp_setup_dialog.gd" type="Script" id=1]
 [ext_resource path="res://addons/godot-fsharp-tools/icons/icon_folder.svg" type="Texture" id=2]
 
-
 [node name="ConfirmationDialog" type="ConfirmationDialog"]
-visible = true
 margin_top = 1.0
 margin_right = 348.0
 margin_bottom = 175.0
