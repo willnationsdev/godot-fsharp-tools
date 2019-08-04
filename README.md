@@ -78,4 +78,12 @@ The F# source file is now added to the F# project!
 
 ---
 
+# Known Issues
+
+ProjectSettings.add_property_info triggers an error the first time the settings are defined. It's supposed to check if the name of the custom property you are making already exists and then give you a warning if it does. Instead, it issues a warning when it DOESN'T exist.
+
+As such, the first time you try to set up F# script auto-generation, you will see 3 errors about an invalid `pinfo.name` or something. Just ignore it. I've already submitted a PR to fix it, but it won't be there until 3.2 at the earliest.
+
+---
+
 If you like the project, please give it a star and consider donating to my [Kofi](https://ko-fi.com/willnationsdev). If you have any problems whatsoever, do not hesitate to open an Issue.
