@@ -92,6 +92,9 @@ func _enter_tree() -> void:
 	fs.connect("filesystem_changed", self, "_on_filesystem_changed")
 
 func _exit_tree() -> void:
+	ProjectSettings.set_setting(SETTINGS_FSHARP_AUTOGEN, null)
+	ProjectSettings.set_setting(SETTINGS_FSHARP_DEFAULT_NAMESPACE, null)
+	ProjectSettings.set_setting(SETTINGS_FSHARP_DEFAULT_OUTPUT_DIR, null)
 	remove_tool_menu_item(MENU_FSHARP_GENERATE_SCRIPT)
 	remove_tool_menu_item(MENU_FSHARP_SETUP)
 
@@ -236,29 +239,12 @@ func _setup_create_fsharp_script_dialog() -> void:
 
 func _setup_fsharp_settings() -> void:
 	if not ProjectSettings.has_setting(SETTINGS_FSHARP_AUTOGEN):
-		ProjectSettings.add_property_info({
-			"name": SETTINGS_FSHARP_AUTOGEN,
-			"tooltip": "If true, when a user creates a C# script, Godot creates a corresponding F# script and makes the C# script derive it.",
-			"type": TYPE_BOOL
-		})
 		ProjectSettings.set_setting(SETTINGS_FSHARP_AUTOGEN, false)
 		
 	if not ProjectSettings.has_setting(SETTINGS_FSHARP_DEFAULT_OUTPUT_DIR):
-		ProjectSettings.add_property_info({
-			"name": SETTINGS_FSHARP_DEFAULT_OUTPUT_DIR,
-			"tooltip": "The directory in which the plugin should auto-generate F# scripts.",
-			"type": TYPE_STRING,
-			"hint": PROPERTY_HINT_DIR
-		})
 		ProjectSettings.set_setting(SETTINGS_FSHARP_DEFAULT_OUTPUT_DIR, "")
 	
 	if not ProjectSettings.has_setting(SETTINGS_FSHARP_DEFAULT_NAMESPACE):
-		ProjectSettings.add_property_info({
-			"name": SETTINGS_FSHARP_DEFAULT_NAMESPACE,
-			"tooltip": "The namespace in which the plugin should auto-generate F# scripts..",
-			"type": TYPE_STRING,
-			"hint": PROPERTY_HINT_DIR
-		})
 		ProjectSettings.set_setting(SETTINGS_FSHARP_DEFAULT_NAMESPACE, "")
 
 func _print_and_clear_output(var p_output: Array) -> void:
