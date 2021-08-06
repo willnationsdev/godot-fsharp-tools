@@ -17,7 +17,7 @@ A Godot Engine plugin to simplify using F# through the C# Mono language.
 1. Download the .zip from GitHub or clone the repository.
 2. Copy/paste the `addons` directory into your project or create a symlink between the `addons/godot-fsharp-tools` directory and a similar one in your project.
 3. Open the ProjectSettings, go to the Plugins tab, find "Godot F# Tools" and switch it from "Inactive" to "Active" on the right-hand side.
-4. Make sure that you've installed Mono and the [dotnet](https://docs.microsoft.com/en-us/dotnet/core/tools/?tabs=netcore2x) command line tool of which this plugin makes heavy use.
+4. Make sure that you've installed the Mono version of Godot and the [dotnet](https://docs.microsoft.com/en-us/dotnet/core/tools/?tabs=netcore2x) command line tool of which this plugin makes heavy use.
 
 ## How to use
 
